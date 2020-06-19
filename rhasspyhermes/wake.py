@@ -185,6 +185,9 @@ class HotwordDetected(Message):
             - String (optional)
             - Language of the detected wake word.
               Copied by the dialogue manager into subsequent ASR and NLU messages.
+          * - wav_bytes
+            - String (optional)
+            - Captured wake-word in WAV format.
 
       Subscribe to this message type with ``mosquitto_sub``:
 
@@ -229,6 +232,7 @@ class HotwordDetected(Message):
     This is a Rhasspy-only attribute.
     """
     lang: typing.Optional[str] = None
+
     """Language of the detected wake word.
     Copied by the dialogue manager into subsequent ASR and NLU messages.
 
@@ -236,7 +240,20 @@ class HotwordDetected(Message):
     ----
 
     This is a Rhasspy-only attribute.
-    """
+    """    
+    wav_bytes: typing.Optional[str] = None
+    """Captured wake-word in WAV format.
+
+    Note
+    ----
+
+    This is a Rhasspy-only attribute.
+    """    
+
+    @classmethod
+    def get_wav_bytes(cls) -> bytes:
+        """Get recorded wake-word as audio data"""
+        return self.wav_bytes
 
     @classmethod
     def topic(cls, **kwargs) -> str:
@@ -289,7 +306,6 @@ class HotwordDetected(Message):
     def is_topic(cls, topic: str) -> bool:
         """True if topic matches template."""
         return re.match(HotwordDetected.TOPIC_PATTERN, topic) is not None
-
 
 # -----------------------------------------------------------------------------
 # Rhasspy Only Messages
