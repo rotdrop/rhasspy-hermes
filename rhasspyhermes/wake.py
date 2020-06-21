@@ -8,7 +8,6 @@ from dataclasses_json import LetterCase, dataclass_json
 
 from .base import Message
 
-
 class HotwordToggleReason(str, Enum):
     """Reason for hotword toggle on/off."""
 
@@ -185,9 +184,6 @@ class HotwordDetected(Message):
             - String (optional)
             - Language of the detected wake word.
               Copied by the dialogue manager into subsequent ASR and NLU messages.
-          * - wav_bytes
-            - String (optional)
-            - Captured wake-word in WAV format.
 
       Subscribe to this message type with ``mosquitto_sub``:
 
@@ -241,19 +237,6 @@ class HotwordDetected(Message):
 
     This is a Rhasspy-only attribute.
     """    
-    wav_bytes: typing.Optional[str] = None
-    """Captured wake-word in WAV format.
-
-    Note
-    ----
-
-    This is a Rhasspy-only attribute.
-    """    
-
-    @classmethod
-    def get_wav_bytes(cls) -> bytes:
-        """Get recorded wake-word as audio data"""
-        return self.wav_bytes
 
     @classmethod
     def topic(cls, **kwargs) -> str:
@@ -691,3 +674,33 @@ class HotwordExampleRecorded(Message):
     def is_topic(cls, topic: str) -> bool:
         """True if topic matches template"""
         return re.match(HotwordExampleRecorded.TOPIC_PATTERN, topic) is not None
+
+@dataclass
+class HotwordAudioCaptured(Message):
+    """Audio captured from hotword activation.
+
+    Attributes
+    ----------
+    site_id: str = "default"
+        The id of the site where the wake word was detected
+
+    wakeword_id: str
+
+    wav_bytes: str
+        Captured audio in WAV format, encoded as base64.
+
+    session_id: Optional[str] = None
+        The id of the dialogue session created after detection if known
+    """
+
+    TOPIC_PATTERN = re.compile(r"^rhasspy/hotword/audioCaptured$")
+
+    site_id: str
+    wakeword_id: str
+    wav_bytes: str
+    session_id: typing.Optional[str] = None
+
+    @classmethod
+    def topic(cls, **kwargs) -> str:
+        """Get MQTT topic for this message type."""
+        return "rhasspy/hotword/audioCaptured"
